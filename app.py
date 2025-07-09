@@ -14,11 +14,7 @@ USER_FILE = "users.csv"
 # --- Page config ---
 st.set_page_config(page_title="Data Analyst AI Assistant (UAT)", page_icon="📊", layout="wide")
 
-# --- Custom CSS Styling ---
-light_css = """ ... """
-dark_css = """ ... """
-st.markdown(dark_css if dark_mode else light_css, unsafe_allow_html=True)
-st.sidebar.caption("🌗 Toggle dark mode in the top-right settings ⚙️")
+st.sidebar.caption("🌗 Toggle dark mode from the top-right ⚙️ Streamlit settings")
 
 # --- Custom CSS Styling ---
 light_css = """
@@ -216,4 +212,4 @@ with st.sidebar:
 
 # --- Footer ---
 st.markdown("---")
-st.caption("✅ Developed by the G 😎")
+st.caption("✅ Developed by Glen Dlemos 😎")
