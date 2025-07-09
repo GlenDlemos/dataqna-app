@@ -107,17 +107,14 @@ if not st.session_state.authenticated:
                 st.error("Please provide both email and password.")
         st.stop()
     else:  # Login
-        if st.button("Login"):
+if st.button("Login"):
     if valid_credentials:
         st.session_state.authenticated = True
-        st.experimental_rerun()
-            if email in st.session_state.users and st.session_state.users[email] == hash_password(password):
-                st.session_state.authenticated = True
-                st.session_state.email = email
-                st.success(f"Welcome back, {email}!")
-                st.experimental_rerun()
-            else:
-                st.error("Invalid credentials. Please try again.")
+        if not st.session_state.get("has_rerun", False):
+            st.session_state.has_rerun = True
+            st.experimental_rerun()
+    else:
+        st.error("Invalid credentials. Please try again.")
         st.stop()
 
 if st.sidebar.button("🚪 Logout"):
