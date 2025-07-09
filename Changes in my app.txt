@@ -1,0 +1,20 @@
+Changes in my app
+
+1. Export chat history to csv.
+
+2. make chat history and search history tab together at the left side
+
+3. Make a copy to clipboard button
+
+4. remove fake links from responses
+
+5. add feedback buttons
+
+6. dark mode toggle
+
+7. 📊 AI-Powered Data Analyst Assistant (UAT)
+Get instant help with Excel formulas, SQL queries, dashboards, Python Queries, automation, and data cleaning.
+
+Change this background into green and when black theme
+
+8. make a small icon of G analysis (need the code)
