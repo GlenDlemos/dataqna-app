@@ -112,9 +112,8 @@ if not st.session_state.authenticated:
             if valid_credentials:
                 st.session_state.authenticated = True
                 st.session_state.email = email
-                if not st.session_state.get("has_rerun", False):
-                    st.session_state.has_rerun = True
-                    st.experimental_rerun()
+                st.success(f"Welcome back, {email}!")
+                st.stop()
             else:
                 st.error("Invalid credentials. Please try again.")
         st.stop()
@@ -180,7 +179,7 @@ if submit and user_input:
                 answer = response.json()["choices"][0]["message"]["content"]
                 answer = re.sub(r'https?://\\S+', '[link removed]', answer)
                 st.session_state.chat_history.append((user_input, answer))
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error(f"Error {response.status_code}: {response.text}")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -200,8 +199,7 @@ with st.sidebar:
             st.markdown("---")
     if st.button("🗑️ Clear History"):
         st.session_state.chat_history = []
-        st.experimental_rerun()
-
+        st.success("History cleared.")
     if st.button("⬇️ Export to CSV"):
         df = pd.DataFrame(st.session_state.chat_history, columns=["Question", "Answer"])
         df.to_csv("chat_history.csv", index=False)
