@@ -121,7 +121,8 @@ if not st.session_state.authenticated:
 if st.sidebar.button("🚪 Logout"):
     st.session_state.authenticated = False
     st.experimental_rerun()
-
+    st.stop()
+	
 # --- Initialize Chat History ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
