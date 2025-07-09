@@ -47,8 +47,6 @@ dark_css = """
 </style>
 """
 
-st.markdown(dark_css if dark_mode else light_css, unsafe_allow_html=True)
-
 # --- Header ---
 st.markdown("""
 <h2>📊 AI-Powered Data Analyst Assistant (UAT)</h2>
