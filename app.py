@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import requests
-from dotenv import load_dotenv
 import pandas as pd
 import re
 from PIL import Image
@@ -9,8 +8,7 @@ import csv
 import hashlib
 
 # --- Load API key ---
-load_dotenv()
-API_KEY = os.getenv("OPENROUTER_API_KEY")
+API_KEY = st.secrets["OPENROUTER_API_KEY"]
 USER_FILE = "users.csv"
 
 # --- Page config ---
