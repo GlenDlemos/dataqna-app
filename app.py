@@ -118,9 +118,14 @@ if not st.session_state.authenticated:
                 st.error("Invalid credentials. Please try again.")
                 st.stop()
 
+# Logout button
 if st.sidebar.button("🚪 Logout"):
     st.session_state.authenticated = False
-    st.experimental_rerun()
+    st.session_state.chat_history = []
+    st.rerun()
+
+# Don't proceed unless authenticated
+if not st.session_state.authenticated:
     st.stop()
 	
 # --- Initialize Chat History ---
