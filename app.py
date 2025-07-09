@@ -26,6 +26,21 @@ st.markdown("""
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+# --- Load API key and Google Sheet ---
+API_KEY = st.secrets["OPENROUTER_API_KEY"]
+GOOGLE_SHEET_ID = st.secrets["GOOGLE_SHEET_ID"]
+
+# Setup Google Sheets access
+from google.oauth2.service_account import Credentials
+import gspread
+
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+creds = Credentials.from_service_account_info(
+    st.secrets["GOOGLE_SERVICE_ACCOUNT"], scopes=SCOPES
+)
+client = gspread.authorize(creds)
+sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
+
 # --- Load/Save Users ---
 def load_users():
     try:
