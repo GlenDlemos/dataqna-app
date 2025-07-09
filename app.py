@@ -211,3 +211,13 @@ with st.sidebar:
 # --- Footer ---
 st.markdown("---")
 st.caption("✅ Developed by Glen Dlemos 😎")
+
+# Hide the Fork & Edit buttons via CSS
+hide_buttons_css = """
+    <style>
+        header [data-testid="stActionButtonIcon"], 
+        footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_buttons_css, unsafe_allow_html=True)
+
