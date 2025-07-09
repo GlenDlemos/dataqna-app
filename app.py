@@ -3,84 +3,54 @@ import os
 import requests
 import pandas as pd
 import re
-from PIL import Image
 import csv
 import hashlib
+from PIL import Image
 
-# --- Load API key ---
+# --- API Key from Streamlit Secrets ---
 API_KEY = st.secrets["OPENROUTER_API_KEY"]
 USER_FILE = "users.csv"
 
 # --- Page config ---
 st.set_page_config(page_title="Data Analyst AI Assistant (UAT)", page_icon="📊", layout="wide")
 
-st.sidebar.caption("🌗 Toggle dark mode from the top-right ⚙️ Streamlit settings")
-
-# --- Custom CSS Styling ---
-light_css = """
-<style>
-.fixed-bottom-form {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: white;
-    padding: 1rem;
-    box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
-</style>
-"""
-
-dark_css = """
-<style>
-.fixed-bottom-form {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #1a1a1a;
-    padding: 1rem;
-    box-shadow: 0 -1px 5px rgba(255,255,255,0.1);
-    z-index: 1000;
-}
-</style>
-"""
-
 # --- Header ---
 st.markdown("""
 <h2>📊 AI-Powered Data Analyst Assistant (UAT)</h2>
 <p>Get instant help with Excel formulas, SQL queries, dashboards, Python Queries, automation, and data cleaning.</p>
+<a href="https://github.com/glendlemos/dataqna-app" target="_blank">🔗 View Source / Fork on GitHub</a>
+<a href="https://share.streamlit.io/" target="_blank">✏️ Edit this App</a>
 """, unsafe_allow_html=True)
 
-# --- Helpers for hashing passwords ---
+# --- Password Hashing ---
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-# --- Load or Initialize Users from CSV ---
+# --- Load/Save Users ---
 def load_users():
-    if not os.path.exists(USER_FILE):
-        with open(USER_FILE, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow(["email", "password"])
-    users = {}
-    with open(USER_FILE, newline="") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            users[row["email"]] = row["password"]
-    return users
+    try:
+        records = sheet.get_all_records()
+        return {row["email"]: row["password"] for row in records}
+    except Exception as e:
+        st.error(f"❌ Error loading users from Google Sheet: {e}")
+        return {}
 
 def save_user(email, password):
     hashed = hash_password(password)
-    with open(USER_FILE, "a", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow([email, hashed])
+    try:
+        st.write("✅ Saving user to Google Sheet...")
+        sheet.append_row([email, hashed])
+        st.success("User saved successfully.")
+    except Exception as e:
+        st.error(f"❌ Error saving user: {e}")
 
-# --- Sign Up and Login ---
+# --- Auth State ---
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 if "users" not in st.session_state:
     st.session_state.users = load_users()
+
+# --- Login / Sign Up ---
 if not st.session_state.authenticated:
     st.markdown("### 🔐 Sign In or Sign Up")
     option = st.radio("Choose an option:", ["Login", "Sign Up"], horizontal=True)
@@ -100,7 +70,7 @@ if not st.session_state.authenticated:
             else:
                 st.error("Please provide both email and password.")
         st.stop()
-    else:  # Login
+    else:
         if st.button("Login"):
             valid_credentials = (
                 email in st.session_state.users and
@@ -110,26 +80,22 @@ if not st.session_state.authenticated:
                 st.session_state.authenticated = True
                 st.session_state.email = email
                 st.success(f"Welcome back, {email}!")
-                st.stop()
+                st.experimental_rerun()
             else:
                 st.error("Invalid credentials. Please try again.")
-                st.stop()
+        st.stop()
 
-# Logout button
+# --- Logout ---
 if st.sidebar.button("🚪 Logout"):
     st.session_state.authenticated = False
     st.session_state.chat_history = []
     st.rerun()
 
-# Don't proceed unless authenticated
-if not st.session_state.authenticated:
-    st.stop()
-	
 # --- Initialize Chat History ---
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# --- Show latest Q&A ---
+# --- Show Latest Response ---
 if st.session_state.chat_history:
     latest_q, latest_a = st.session_state.chat_history[-1]
     st.markdown("### 🧠 Latest Response")
@@ -162,7 +128,8 @@ with st.form(key="chat_form"):
 if submit and user_input:
     cleaned_input = user_input.lower().strip()
 
-    if cleaned_input in ["hi", "hello", "hey", "yo", "yoo", "hola", "hii", "hiii", "hey there"]:
+    greetings = ["hi", "hello", "hey", "yo", "yoo", "hola", "hii", "hiii", "hey there"]
+    if cleaned_input in greetings:
         st.info("👋 Hello! Please ask something related to Excel, SQL, or data analysis.")
     else:
         with st.spinner("Thinking..."):
@@ -187,7 +154,7 @@ if submit and user_input:
                 st.error(f"Error {response.status_code}: {response.text}")
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- Sidebar: Search and Chat History ---
+# --- Sidebar: History ---
 with st.sidebar:
     selected_tab = st.radio("📂 View", ["Search History", "Chat History"])
     if selected_tab == "Search History":
@@ -211,13 +178,3 @@ with st.sidebar:
 # --- Footer ---
 st.markdown("---")
 st.caption("✅ Developed by Glen Dlemos 😎")
-
-# Hide the Fork & Edit buttons via CSS
-hide_buttons_css = """
-    <style>
-        header [data-testid="stActionButtonIcon"], 
-        footer {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_buttons_css, unsafe_allow_html=True)
-
