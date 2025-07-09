@@ -106,17 +106,20 @@ if not st.session_state.authenticated:
             else:
                 st.error("Please provide both email and password.")
         st.stop()
-    else:  # Login
-        if st.button("Login"):
-            valid_credentials = email in st.session_state.users and st.session_state.users[email] == hash_password(password)
-            if valid_credentials:
-                st.session_state.authenticated = True
-                st.session_state.email = email
-                st.success(f"Welcome back, {email}!")
-                st.stop()
-            else:
-                st.error("Invalid credentials. Please try again.")
-        st.stop()
+   else:  # Login
+    if st.button("Login"):
+        valid_credentials = (
+            email in st.session_state.users and
+            st.session_state.users[email] == hash_password(password)
+        )
+        if valid_credentials:
+            st.session_state.authenticated = True
+            st.session_state.email = email
+            st.success(f"Welcome back, {email}!")
+            st.stop()
+        else:
+            st.error("Invalid credentials. Please try again.")
+            st.stop()
 
 if st.sidebar.button("🚪 Logout"):
     st.session_state.authenticated = False
