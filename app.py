@@ -96,8 +96,8 @@ if not st.session_state.authenticated:
                 st.session_state.email = email
                 st.success(f"Welcome back, {email}!")
                 st.session_state.authenticated = True
-		st.session_state.email = email
-		st.stop()
+                st.session_state.email = email
+                st.stop()
             else:
                 st.error("Invalid credentials. Please try again.")
         st.stop()
