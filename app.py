@@ -107,14 +107,16 @@ if not st.session_state.authenticated:
                 st.error("Please provide both email and password.")
         st.stop()
     else:  # Login
-if st.button("Login"):
-    if valid_credentials:
-        st.session_state.authenticated = True
-        if not st.session_state.get("has_rerun", False):
-            st.session_state.has_rerun = True
-            st.experimental_rerun()
-    else:
-        st.error("Invalid credentials. Please try again.")
+        if st.button("Login"):
+            valid_credentials = email in st.session_state.users and st.session_state.users[email] == hash_password(password)
+            if valid_credentials:
+                st.session_state.authenticated = True
+                st.session_state.email = email
+                if not st.session_state.get("has_rerun", False):
+                    st.session_state.has_rerun = True
+                    st.experimental_rerun()
+            else:
+                st.error("Invalid credentials. Please try again.")
         st.stop()
 
 if st.sidebar.button("🚪 Logout"):
@@ -198,11 +200,8 @@ with st.sidebar:
             st.markdown("---")
     if st.button("🗑️ Clear History"):
         st.session_state.chat_history = []
+        st.experimental_rerun()
 
-    if not st.session_state.get("has_rerun", False):
-    	st.session_state.has_rerun = True
-    	st.experimental_rerun()
-    
     if st.button("⬇️ Export to CSV"):
         df = pd.DataFrame(st.session_state.chat_history, columns=["Question", "Answer"])
         df.to_csv("chat_history.csv", index=False)
