@@ -5,14 +5,12 @@ import pandas as pd
 import re
 import csv
 import hashlib
-import html
 from PIL import Image
 from google.oauth2.service_account import Credentials
 import gspread
 
 # --- API Key and Google Sheet Setup ---
 API_KEY = st.secrets["OPENROUTER_API_KEY"]
-USER_FILE = "users.csv"
 GOOGLE_SHEET_ID = st.secrets["GOOGLE_SHEET_ID"]
 
 # Setup Google Sheets access
@@ -114,24 +112,26 @@ if st.session_state.chat_history:
     st.markdown(f"**You:** {latest_q}")
     st.code(latest_a)
 
-    # Escape answer safely
-    escaped_answer = latest_a.replace("\\", "\\\\").replace("`", "\\`").replace('"', '\\"')
+    # Escape the answer for JS use
+    escaped_answer = latest_a.replace("\\", "\\\\").replace('"', '\\"').replace("`", "\\`")
+
     copy_button_code = f"""
     <script>
     function copyToClipboard() {{
         navigator.clipboard.writeText("{escaped_answer}");
     }}
     </script>
-    <button onclick="copyToClipboard()" style="
-        background-color:#4CAF50;
-        color:white;
-        border:none;
-        padding:8px 16px;
-        margin-top:10px;
-        border-radius:5px;
-        cursor:pointer;">
-        📋 Copy to Clipboard
-    </button>
+    <div style='margin-top: 10px;'>
+        <button onclick="copyToClipboard()" style="
+            background-color:#4CAF50;
+            color:white;
+            border:none;
+            padding:8px 16px;
+            border-radius:5px;
+            cursor:pointer;">
+            📋 Copy to Clipboard
+        </button>
+    </div>
     """
     st.markdown(copy_button_code, unsafe_allow_html=True)
 
