@@ -136,14 +136,17 @@ if st.session_state.chat_history:
     st.markdown(f"**You:** {latest_q}")
     st.code(latest_a)  # Uses built-in copy button
 
+if st.session_state.chat_history:
+    latest_q, latest_a = st.session_state.chat_history[-1]
     col1, col2 = st.columns(2)
-if col1.button("👍 Helpful", key="feedback_yes"):
-    log_feedback(st.session_state.email, latest_q, "Helpful")
-    st.success("Thanks for your feedback!")
 
-if col2.button("👎 Not Helpful", key="feedback_no"):
-    log_feedback(st.session_state.email, latest_q, "Not Helpful")
-    st.success("Thanks for your feedback!")
+    if col1.button("👍 Helpful", key="feedback_yes"):
+        log_feedback(st.session_state.email, latest_q, "Helpful")
+        st.success("Thanks for your feedback!")
+
+    if col2.button("👎 Not Helpful", key="feedback_no"):
+        log_feedback(st.session_state.email, latest_q, "Not Helpful")
+        st.success("Thanks for your feedback!")
 
 # --- Chat Input Form ---
 st.markdown("<div class='fixed-bottom-form'>", unsafe_allow_html=True)
