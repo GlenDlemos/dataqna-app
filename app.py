@@ -114,18 +114,24 @@ if st.session_state.chat_history:
     st.markdown(f"**You:** {latest_q}")
     st.code(latest_a)
 
-    escaped_answer = html.escape(latest_a)
+    # Escape answer safely
+    escaped_answer = latest_a.replace("\\", "\\\\").replace("`", "\\`").replace('"', '\\"')
     copy_button_code = f"""
-        <button onclick="navigator.clipboard.writeText(`{escaped_answer}`)" style="
-            background-color:#4CAF50;
-            color:white;
-            border:none;
-            padding:8px 16px;
-            margin-top:10px;
-            border-radius:5px;
-            cursor:pointer;">
-            📋 Copy to Clipboard
-        </button>
+    <script>
+    function copyToClipboard() {{
+        navigator.clipboard.writeText("{escaped_answer}");
+    }}
+    </script>
+    <button onclick="copyToClipboard()" style="
+        background-color:#4CAF50;
+        color:white;
+        border:none;
+        padding:8px 16px;
+        margin-top:10px;
+        border-radius:5px;
+        cursor:pointer;">
+        📋 Copy to Clipboard
+    </button>
     """
     st.markdown(copy_button_code, unsafe_allow_html=True)
 
@@ -164,7 +170,7 @@ if submit and user_input:
             if response.status_code == 200:
                 raw_answer = response.json()["choices"][0]["message"]["content"]
                 answer = re.sub(r'<button.*?</button>', '', raw_answer, flags=re.DOTALL)
-                answer = re.sub(r'https?://\\S+', '[link removed]', answer)
+                answer = re.sub(r'https?://\S+', '[link removed]', answer)
                 st.session_state.chat_history.append((user_input, answer))
                 st.rerun()
             else:
