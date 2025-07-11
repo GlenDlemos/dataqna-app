@@ -51,6 +51,7 @@ def load_users():
         return {}
 
 def save_user(email, password):
+    email = email.strip().lower()  # 👈 Normalize email
     hashed = hash_password(password)
     try:
         st.write("✅ Saving user to Google Sheet...")
@@ -70,7 +71,7 @@ if not st.session_state.authenticated:
     st.markdown("### 🔐 Sign In or Sign Up")
     option = st.radio("Choose an option:", ["Login", "Sign Up"], horizontal=True)
 
-    email = st.text_input("📧 Email")
+    email = st.text_input("📧 Email").strip().lower()
     password = st.text_input("🔒 Password", type="password")
 
     if option == "Sign Up":
