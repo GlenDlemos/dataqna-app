@@ -164,8 +164,11 @@ if submit and user_input:
             }
             response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=body)
             if response.status_code == 200:
-                answer = response.json()["choices"][0]["message"]["content"]
+                raw_answer = response.json()["choices"][0]["message"]["content"]
+                answer = re.sub(r'<button.*?</button>', '', raw_answer, flags=re.DOTALL)
                 answer = re.sub(r'https?://\\S+', '[link removed]', answer)
+                st.session_state.chat_history.append((user_input, answer))
+                st.rerun()
                 st.session_state.chat_history.append((user_input, answer))
                 st.rerun()
             else:
