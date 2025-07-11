@@ -60,6 +60,27 @@ def log_feedback(email, question, feedback):
     except Exception as e:
         st.warning(f"⚠️ Feedback logging failed: {e}")
 
+# --- keeping the chat history after logout ---
+
+def save_user_chat_history(email, chat_history):
+    try:
+        sheet_hist = client.open_by_key(GOOGLE_SHEET_ID).worksheet("chat_history_store")
+        ist = pytz.timezone("Asia/Kolkata")
+        for q, a in chat_history:
+            timestamp = datetime.now(ist).strftime("%Y-%m-%d %H:%M:%S")
+            sheet_hist.append_row([email, timestamp, q, a])
+    except Exception as e:
+        st.warning(f"⚠️ Could not save chat history: {e}")
+
+def load_user_chat_history(email):
+    try:
+        sheet_hist = client.open_by_key(GOOGLE_SHEET_ID).worksheet("chat_history_store")
+        records = sheet_hist.get_all_records()
+        return [(row["question"], row["answer"]) for row in records if row["email"] == email]
+    except Exception as e:
+        st.warning(f"⚠️ Could not load chat history: {e}")
+        return []
+
 # --- Load/Save Users ---
 def load_users():
     try:
@@ -114,6 +135,7 @@ if not st.session_state.authenticated:
                 st.session_state.authenticated = True
                 st.session_state.email = email
                 st.success(f"Welcome back, {email}!")
+                st.session_state.chat_history = load_user_chat_history(email)
                 st.rerun()
             else:
                 st.error("Invalid credentials. Please try again.")
@@ -121,6 +143,7 @@ if not st.session_state.authenticated:
 
 # --- Logout ---
 if st.sidebar.button("🚪 Logout"):
+    save_user_chat_history(st.session_state.email, st.session_state.chat_history)
     st.session_state.authenticated = False
     st.session_state.chat_history = []
     st.rerun()
