@@ -110,30 +110,7 @@ if st.session_state.chat_history:
     latest_q, latest_a = st.session_state.chat_history[-1]
     st.markdown("### 🧠 Latest Response")
     st.markdown(f"**You:** {latest_q}")
-    st.code(latest_a)
-
-    # Escape the answer for JS use
-    escaped_answer = latest_a.replace("\\", "\\\\").replace('"', '\\"').replace("`", "\\`")
-
-    copy_button_code = f"""
-    <script>
-    function copyToClipboard() {{
-        navigator.clipboard.writeText("{escaped_answer}");
-    }}
-    </script>
-    <div style='margin-top: 10px;'>
-        <button onclick="copyToClipboard()" style="
-            background-color:#4CAF50;
-            color:white;
-            border:none;
-            padding:8px 16px;
-            border-radius:5px;
-            cursor:pointer;">
-            📋 Copy to Clipboard
-        </button>
-    </div>
-    """
-    st.markdown(copy_button_code, unsafe_allow_html=True)
+    st.code(latest_a)  # Uses built-in copy button
 
     col1, col2 = st.columns(2)
     with col1:
