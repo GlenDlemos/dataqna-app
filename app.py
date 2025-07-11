@@ -8,6 +8,9 @@ import hashlib
 from PIL import Image
 from google.oauth2.service_account import Credentials
 import gspread
+from datetime import datetime
+import pytz
+
 
 # --- API Key and Google Sheet Setup ---
 API_KEY = st.secrets["OPENROUTER_API_KEY"]
@@ -35,6 +38,16 @@ st.markdown("""
 # --- Password Hashing ---
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+# --- Saving Chats to google Sheets ---
+def log_chat_to_sheet(email, question, answer):
+    try:
+        ist = pytz.timezone("Asia/Kolkata")
+        timestamp = datetime.now(ist).strftime("%Y-%m-%d %H:%M:%S")
+        logs_sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("chat_logs")
+        logs_sheet.append_row([email, timestamp, question, answer])
+    except Exception as e:
+        st.warning(f"⚠️ Chat logging failed: {e}")
 
 # --- Load/Save Users ---
 def load_users():
@@ -149,6 +162,7 @@ if submit and user_input:
                 answer = re.sub(r'<button.*?</button>', '', raw_answer, flags=re.DOTALL)
                 answer = re.sub(r'https?://\S+', '[link removed]', answer)
                 st.session_state.chat_history.append((user_input, answer))
+                log_chat_to_sheet(st.session_state.email, user_input, answer)
                 st.rerun()
             else:
                 st.error(f"Error {response.status_code}: {response.text}")
