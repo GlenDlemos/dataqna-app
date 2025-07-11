@@ -118,19 +118,26 @@ if st.session_state.chat_history:
     latest_q, latest_a = st.session_state.chat_history[-1]
     st.markdown("### 🧠 Latest Response")
     st.markdown(f"**You:** {latest_q}")
-    st.code(latest_a)
-    st.markdown(f"""
-        <button onclick=\"navigator.clipboard.writeText(`{latest_a}`)\" style=\"
-            background-color:#4CAF50;
-            color:white;
-            border:none;
-            padding:8px 16px;
-            margin-top:10px;
-            border-radius:5px;
-            cursor:pointer;\">
-            📋 Copy to Clipboard
-        </button>
-    """, unsafe_allow_html=True)
+    import html
+
+st.code(latest_a)
+
+# Escape special characters in answer before putting in JS
+escaped_answer = html.escape(latest_a)
+
+copy_button_code = f"""
+    <button onclick="navigator.clipboard.writeText(`{escaped_answer}`)" style="
+        background-color:#4CAF50;
+        color:white;
+        border:none;
+        padding:8px 16px;
+        margin-top:10px;
+        border-radius:5px;
+        cursor:pointer;">
+        📋 Copy to Clipboard
+    </button>
+"""
+st.markdown(copy_button_code, unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.button("👍 Helpful", key="feedback_yes")
