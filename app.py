@@ -119,8 +119,7 @@ if st.session_state.chat_history:
     st.markdown("### 🧠 Latest Response")
     st.markdown(f"**You:** {latest_q}")
     import html
-
-st.code(latest_a)
+    st.code(latest_a)
 
 # Escape special characters in answer before putting in JS
 escaped_answer = html.escape(latest_a)
