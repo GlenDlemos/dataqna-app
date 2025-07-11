@@ -49,6 +49,17 @@ def log_chat_to_sheet(email, question, answer):
     except Exception as e:
         st.warning(f"⚠️ Chat logging failed: {e}")
 
+# --- Saving Feedback into google sheet ---
+
+def log_feedback(email, question, feedback):
+    try:
+        ist = pytz.timezone("Asia/Kolkata")
+        timestamp = datetime.now(ist).strftime("%Y-%m-%d %H:%M:%S")
+        feedback_sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("feedback_logs")
+        feedback_sheet.append_row([email, timestamp, question, feedback])
+    except Exception as e:
+        st.warning(f"⚠️ Feedback logging failed: {e}")
+
 # --- Load/Save Users ---
 def load_users():
     try:
@@ -126,10 +137,13 @@ if st.session_state.chat_history:
     st.code(latest_a)  # Uses built-in copy button
 
     col1, col2 = st.columns(2)
-    with col1:
-        st.button("👍 Helpful", key="feedback_yes")
-    with col2:
-        st.button("👎 Not Helpful", key="feedback_no")
+if col1.button("👍 Helpful", key="feedback_yes"):
+    log_feedback(st.session_state.email, latest_q, "Helpful")
+    st.success("Thanks for your feedback!")
+
+if col2.button("👎 Not Helpful", key="feedback_no"):
+    log_feedback(st.session_state.email, latest_q, "Not Helpful")
+    st.success("Thanks for your feedback!")
 
 # --- Chat Input Form ---
 st.markdown("<div class='fixed-bottom-form'>", unsafe_allow_html=True)
