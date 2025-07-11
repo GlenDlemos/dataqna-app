@@ -5,11 +5,23 @@ import pandas as pd
 import re
 import csv
 import hashlib
+import html
 from PIL import Image
+from google.oauth2.service_account import Credentials
+import gspread
 
-# --- API Key from Streamlit Secrets ---
+# --- API Key and Google Sheet Setup ---
 API_KEY = st.secrets["OPENROUTER_API_KEY"]
 USER_FILE = "users.csv"
+GOOGLE_SHEET_ID = st.secrets["GOOGLE_SHEET_ID"]
+
+# Setup Google Sheets access
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+creds = Credentials.from_service_account_info(
+    st.secrets["GOOGLE_SERVICE_ACCOUNT"], scopes=SCOPES
+)
+client = gspread.authorize(creds)
+sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
 
 # --- Page config ---
 st.set_page_config(page_title="Data Analyst AI Assistant (UAT)", page_icon="📊", layout="wide")
@@ -18,28 +30,13 @@ st.set_page_config(page_title="Data Analyst AI Assistant (UAT)", page_icon="📊
 st.markdown("""
 <h2>📊 AI-Powered Data Analyst Assistant (UAT)</h2>
 <p>Get instant help with Excel formulas, SQL queries, dashboards, Python Queries, automation, and data cleaning.</p>
-<a href="https://github.com/glendlemos/dataqna-app" target="_blank">🔗 View Source / Fork on GitHub</a>
+<a href="https://github.com/glendlemos/dataqna-app" target="_blank">🔗 View Source / Fork on GitHub</a><br>
 <a href="https://share.streamlit.io/" target="_blank">✏️ Edit this App</a>
 """, unsafe_allow_html=True)
 
 # --- Password Hashing ---
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
-
-# --- Load API key and Google Sheet ---
-API_KEY = st.secrets["OPENROUTER_API_KEY"]
-GOOGLE_SHEET_ID = st.secrets["GOOGLE_SHEET_ID"]
-
-# Setup Google Sheets access
-from google.oauth2.service_account import Credentials
-import gspread
-
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-creds = Credentials.from_service_account_info(
-    st.secrets["GOOGLE_SERVICE_ACCOUNT"], scopes=SCOPES
-)
-client = gspread.authorize(creds)
-sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
 
 # --- Load/Save Users ---
 def load_users():
@@ -51,10 +48,9 @@ def load_users():
         return {}
 
 def save_user(email, password):
-    email = email.strip().lower()  # 👈 Normalize email
+    email = email.strip().lower()
     hashed = hash_password(password)
     try:
-        st.write("✅ Saving user to Google Sheet...")
         sheet.append_row([email, hashed])
         st.success("User saved successfully.")
     except Exception as e:
@@ -96,9 +92,7 @@ if not st.session_state.authenticated:
                 st.session_state.authenticated = True
                 st.session_state.email = email
                 st.success(f"Welcome back, {email}!")
-                st.session_state.authenticated = True
-                st.session_state.email = email
-                st.stop()
+                st.rerun()
             else:
                 st.error("Invalid credentials. Please try again.")
         st.stop()
@@ -118,25 +112,23 @@ if st.session_state.chat_history:
     latest_q, latest_a = st.session_state.chat_history[-1]
     st.markdown("### 🧠 Latest Response")
     st.markdown(f"**You:** {latest_q}")
-    import html
     st.code(latest_a)
 
-# Escape special characters in answer before putting in JS
-escaped_answer = html.escape(latest_a)
+    escaped_answer = html.escape(latest_a)
+    copy_button_code = f"""
+        <button onclick="navigator.clipboard.writeText(`{escaped_answer}`)" style="
+            background-color:#4CAF50;
+            color:white;
+            border:none;
+            padding:8px 16px;
+            margin-top:10px;
+            border-radius:5px;
+            cursor:pointer;">
+            📋 Copy to Clipboard
+        </button>
+    """
+    st.markdown(copy_button_code, unsafe_allow_html=True)
 
-copy_button_code = f"""
-    <button onclick="navigator.clipboard.writeText(`{escaped_answer}`)" style="
-        background-color:#4CAF50;
-        color:white;
-        border:none;
-        padding:8px 16px;
-        margin-top:10px;
-        border-radius:5px;
-        cursor:pointer;">
-        📋 Copy to Clipboard
-    </button>
-"""
-st.markdown(copy_button_code, unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         st.button("👍 Helpful", key="feedback_yes")
@@ -173,8 +165,6 @@ if submit and user_input:
                 raw_answer = response.json()["choices"][0]["message"]["content"]
                 answer = re.sub(r'<button.*?</button>', '', raw_answer, flags=re.DOTALL)
                 answer = re.sub(r'https?://\\S+', '[link removed]', answer)
-                st.session_state.chat_history.append((user_input, answer))
-                st.rerun()
                 st.session_state.chat_history.append((user_input, answer))
                 st.rerun()
             else:
